@@ -1,0 +1,8 @@
+ping 1 {
+	request {
+		what 0 : string
+	}
+	response {
+		sleep 0 : integer
+	}
+}

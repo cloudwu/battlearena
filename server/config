@@ -1,0 +1,20 @@
+thread = 8
+logger = nil
+logpath = "."
+harbor = 0
+start = "main"	-- main script
+bootstrap = "snlua bootstrap"	-- The service for bootstrap
+luaservice = "skynet/service/?.lua;server/?.lua"
+lualoader = "skynet/lualib/loader.lua"
+cpath = "skynet/cservice/?.so"
+snax = "server/?.lua"
+lua_path = "skynet/lualib/?.lua"
+lua_cpath = "skynet/luaclib/?.so"
+-- daemon = "./skynet.pid"
+
+login_address = "$LOGIN_ADDRESS"
+login_port = $LOGIN_PORT
+gate_address = "$GATE_ADDRESS"
+gate_port = "$GATE_PORT"
+gate_name = "$GATE_NAME"	-- for multi gate
+max_client = $MAX_CLIENT
