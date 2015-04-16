@@ -18,5 +18,5 @@ end
 -- todo : close room ?
 
 function init()
-	udpgate = snax.newservice("udpserver",host, port)
+	udpgate = snax.newservice("udpserver", "0.0.0.0", port)
 end

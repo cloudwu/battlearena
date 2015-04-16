@@ -11,6 +11,8 @@ local timeout = 10 * 60 * 100	-- 10 mins
 --[[
 	8 bytes hmac   crypt.hmac_hash(key, session .. data)
 	4 bytes session
+	4 bytes time
+	2 bytes lag		-- if lag is ff ff , time sync
 	padding data
 ]]
 
@@ -39,8 +41,14 @@ function accept.post(session, data)
 	end
 end
 
+local function timesync(session, time, from)
+	-- return session .. servertime .. ff ff .. time
+	local now = skynet.now()
+	socket.sendto(U, from, string.pack("<IIHI", session, now, 0xffff, time))
+end
+
 local function udpdispatch(str, from)
-	local session = string.unpack("<L", str, 9)
+	local session, time, lag = string.unpack("<IIH", str, 9)
 	local s = S[session]
 	if s then
 		if s.address ~= from then
@@ -50,7 +58,15 @@ local function udpdispatch(str, from)
 			end
 			s.address = from
 		end
+		if lag == 0xffff then
+			return timesync(session, time, from)
+		end
 		s.time = skynet.now()
+		-- NOTICE: after 497 days, the time will rewind
+		if s.time > time + timeout then
+			snax.printf("The package is delay %f sec", (s.time - lag)/100)
+			return
+		end
 		s.room.post.update(str:sub(9))
 	else
 		snax.printf("Invalid session %d from %s" , session, socket.udp_address(from))

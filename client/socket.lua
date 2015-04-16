@@ -1,5 +1,6 @@
 local lsocket = require "lsocket"
 local crypt = require "crypt"
+local gettime = require("time").time
 
 local socket = {}
 
@@ -259,14 +260,56 @@ function socket.login(token)
 	end
 end
 
+local function udp_sync(self)
+	local now = gettime()
+	local data = string.pack("<IIH", self.__session, now, 0xffff)
+	data = crypt.hmac_hash(self.__secret, data) .. data
+	self.__fd:send(data)
+end
+
 local function udp_send(self, data)
-	data = string.pack("<L", self.__session) .. data
+	assert(self.__lag, "sync first")
+	data = string.pack("<IIH", self.__session, self.__servertime + gettime(), self.__lag) .. data
 	data = crypt.hmac_hash(self.__secret, data) .. data
 	self.__fd:send(data)
 end
 
 local function udp_recv(self)
-	return self.__fd:recv()
+	local data = self.__fd:recv()
+	if data then
+		local session, time, lag = string.unpack("<IIH", data)
+		local now = gettime()
+		if lag == 0xffff then
+			local req_time = string.unpack("<I", data, 11)
+			self.__lag = (now - req_time) // 2
+			self.__servertime = time + self.__lag - now
+			print(now, req_time)
+			return time + self.__lag, self.__lag
+		else
+			local server_time = time + lag + self.__lag
+			local local_time = self.__servertime + now
+			local diff = local_time - server_time
+			if diff > 0 then
+				-- if local_time > server_time,  then
+				--     1. lag of this time is great than self.__lag
+				--  or 2. self.__servertime should be larger, but in excess of self.__lag .
+				local adjust = diff // 2
+				if adjust > self.__lag then
+					adjust = self.__lag
+				end
+				self.__servertime = self.__servertime + adjust
+				self.__lag = self.__lag + diff - adjust
+			elseif diff < 0 then
+				local adjust = -diff // 2
+				if adjust >= self.__lag then
+					adjust = self.__lag // 2
+				end
+				self.__servertime = self.__servertime - adjust
+				self.__lag = self.__lag  + diff + adjust
+			end
+			return now + self.__servertime, self.__lag, time, data:sub(11)
+		end
+	end
 end
 
 function socket.udp(conf)
@@ -275,8 +318,11 @@ function socket.udp(conf)
 		__fd = fd,
 		__secret = conf.secret,
 		__session = conf.session,
+		__lag = nil,
+		__servertime = nil,
 		send = udp_send,
 		recv = udp_recv,
+		sync = udp_sync,
 	}
 end
 
