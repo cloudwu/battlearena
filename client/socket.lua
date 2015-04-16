@@ -37,9 +37,11 @@ local function writeline(self, text)
 		lsocket.select(nil, {self.__fd})
 		wt = 0
 	end
+	local unsend = wt+1
 	while wt < n do
 		n = n - wt
-		wt = assert(self.__fd:send(text:sub(wt+1)))
+		wt = assert(self.__fd:send(text:sub(unsend)))
+		unsend = unsend + wt
 	end
 end
 
@@ -94,18 +96,24 @@ local function auth(self, timeout)
 	if self.__auth == nil then
 		local handshake = self.__token .. self.__index
 		self.__index = self.__index + 1
-		local hmac = crypt.hmac64(crypt.hashkey(handshake), self.__secret)
+		local hmac = crypt.hmac_hash(self.__secret, handshake)
 		local package = string.pack(">s2", handshake .. ":" .. crypt.base64encode(hmac))
 		local n = #package
 		local sb = self.__fd:send(package)
 		if sb == false then
 			return false
 		end
+		local unsend = sb + 1
 		while sb < n do
 			n = n - sb
-			sb = self.__fd:send(package:sub(sb+1))
+			sb = self.__fd:send(package:sub(unsend))
 			if sb == nil then
 				return nil
+			end
+			if sb == false then
+				sb = 0
+			else
+				unsend = unsend + sb
 			end
 		end
 		self.__auth = false
@@ -139,13 +147,15 @@ local function send_request(self, data)
 		closefd(self)
 		return
 	end
+	local unsend = sb + 1
 	while sb < n do
 		n = n - sb
-		local sb = self.__fd:send(v.data:sub(sb+1))
+		local sb = self.__fd:send(v.data:sub(unsend))
 		if not sb then
 			closefd(self)
 			return
 		end
+		unsend = unsend + sb
 	end
 end
 
@@ -283,7 +293,6 @@ local function udp_recv(self)
 			local req_time = string.unpack("<I", data, 11)
 			self.__lag = (now - req_time) // 2
 			self.__servertime = time + self.__lag - now
-			print(now, req_time)
 			return time + self.__lag, self.__lag
 		else
 			local server_time = time + lag + self.__lag
@@ -312,6 +321,13 @@ local function udp_recv(self)
 	end
 end
 
+local function udp_time(self)
+	local diff = self.__servertime
+	if diff then
+		return gettime() + diff
+	end
+end
+
 function socket.udp(conf)
 	local fd = assert(lsocket.connect("udp", conf.host, conf.port))
 	return {
@@ -323,6 +339,7 @@ function socket.udp(conf)
 		send = udp_send,
 		recv = udp_recv,
 		sync = udp_sync,
+		time = udp_time,
 	}
 end
 
