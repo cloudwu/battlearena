@@ -1,8 +1,10 @@
-ping 1 {
+join 1 {
 	request {
-		what 0 : string
+		room 0 : integer
 	}
 	response {
-		sleep 0 : integer
+		session 0 : integer
+		host 1 : string
+		port 2 : integer
 	}
 }

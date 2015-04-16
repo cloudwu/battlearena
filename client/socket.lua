@@ -249,6 +249,7 @@ function socket.login(token)
 		local subid = crypt.base64decode(string.sub(result, 5))
 		self.__token = string.format("%s@%s#%s:", crypt.base64encode(token.user), crypt.base64encode(token.server),crypt.base64encode(subid))
 		crypt.base64decode(string.sub(result, 5))
+		self.secret = secret
 		self.connect = connect_gameserver
 		self.request = request_gameserver
 		self.reconnect = reconnect_gameserver
@@ -256,6 +257,27 @@ function socket.login(token)
 	else
 		error(string.sub(result, 5))
 	end
+end
+
+local function udp_send(self, data)
+	data = string.pack("<L", self.__session) .. data
+	data = crypt.hmac_hash(self.__secret, data) .. data
+	self.__fd:send(data)
+end
+
+local function udp_recv(self)
+	return self.__fd:recv()
+end
+
+function socket.udp(conf)
+	local fd = assert(lsocket.connect("udp", conf.host, conf.port))
+	return {
+		__fd = fd,
+		__secret = conf.secret,
+		__session = conf.session,
+		send = udp_send,
+		recv = udp_recv,
+	}
 end
 
 return socket

@@ -4,9 +4,7 @@ local snax = require "snax"
 skynet.start(function()
 	skynet.newservice("console")
 	skynet.newservice("debug_console",8000)
-
---	local udp = snax.newservice("udpserver","127.0.0.1", 9999)
---	local room = snax.newservice("room", udp.handle)
+	snax.uniqueservice("roomkeeper")
 
 	local loginserver = skynet.newservice("logind")
 	local gate = skynet.newservice("gated", loginserver)

@@ -9,6 +9,7 @@ local fd = assert(socket.login {
 	pass = "password",
 })
 
+
 fd:connect("127.0.0.1", 8888)
 
 local function request(fd, type, obj, cb)
@@ -30,16 +31,12 @@ local function dispatch(fd)
 	end
 end
 
-request(fd, "ping", { what = "hello" } , function(obj)
-	print("1===>", obj.sleep)
+request(fd, "join", { room = 1 } , function(obj)
+	obj.secret = fd.secret
+	local udp = socket.udp(obj)
+	udp:send "Hello"
 end)
 
-dispatch(fd)
-
-request(fd, "ping", { what = "world" } , function(obj)
-	print("2===>", obj.sleep)
-end)
-
-for i=2,20 do
+for i=1,20 do
 	dispatch(fd)
 end
