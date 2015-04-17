@@ -6,8 +6,16 @@ local roomid
 local gate
 local users = {}
 
+--[[
+	4 bytes localtime
+	4 bytes eventtime		-- if event time is ff ff ff ff , time sync
+	4 bytes session
+	padding data
+]]
+
 function accept.update(data)
-	-- session(dword) localtime(dword) eventtime(dword)
+	local time = skynet.now()
+	data = string.pack("<I", time) .. data
 	for s,v in pairs(users) do
 		gate.post.post(s, data)
 	end

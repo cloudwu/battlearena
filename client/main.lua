@@ -42,11 +42,11 @@ request(fd, "join", { room = 1 } , function(obj)
 	udp:sync()
 end)
 
-for i=1,200 do
+for i=1,600 do
 	timesync.sleep(1)
-	if i == 100 and udp and udp.__lag then
-		print("send time", udp:time())
-		udp:send "Hello"
+	if (i == 100 or i == 200 or i ==300) and udp then
+		print("send time", timesync.globaltime())
+		udp:send ("Hello" .. i)
 	end
 	if udp then
 		local time, session, data = udp:recv()

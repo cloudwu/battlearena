@@ -64,6 +64,7 @@ lsync(lua_State *L) {
 		int estimate_last = t->estimate_from + (t->estimate_to - t->estimate_from)/2;
 		t->time_elapse += elapse_from_last_sync;
 		t->time_shift += estimate - estimate_last;
+		printf("shift: %d %d %d\n", t->time_elapse, estimate, estimate_last);
 		t->time_sync = local_time;
 		if (estimate < t->estimate_from || estimate > t->estimate_to) {
 			// estimate time is not in last estimate section, use this section instead

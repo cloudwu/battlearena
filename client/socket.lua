@@ -272,13 +272,13 @@ end
 
 local function udp_sync(self)
 	local now = time.localtime()
-	local data = string.pack("<III", self.__session, now, 0xffffffff)
+	local data = string.pack("<III", now, 0xffffffff, self.__session)
 	data = crypt.hmac_hash(self.__secret, data) .. data
 	self.__fd:send(data)
 end
 
 local function udp_send(self, data)
-	data = string.pack("<III", self.__session, time.localtime(), time.globaltime()) .. data
+	data = string.pack("<III", time.localtime(), time.globaltime(), self.__session) .. data
 	data = crypt.hmac_hash(self.__secret, data) .. data
 	self.__fd:send(data)
 end
@@ -286,9 +286,9 @@ end
 local function udp_recv(self)
 	local data = self.__fd:recv()
 	if data then
-		local session, localtime, eventtime = string.unpack("<III", data)
+		local globaltime, localtime, eventtime, session = string.unpack("<IIII", data)
 		if session == self.__session then
-			print("sync:",time.sync(localtime, eventtime))
+			print("sync:",time.sync(localtime, globaltime))
 		end
 		return eventtime, session, data:sub(13)
 	end

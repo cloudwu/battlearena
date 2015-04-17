@@ -10,9 +10,9 @@ local timeout = 10 * 60 * 100	-- 10 mins
 
 --[[
 	8 bytes hmac   crypt.hmac_hash(key, session .. data)
-	4 bytes session
 	4 bytes localtime
 	4 bytes eventtime		-- if event time is ff ff ff ff , time sync
+	4 bytes session
 	padding data
 ]]
 
@@ -42,13 +42,13 @@ function accept.post(session, data)
 end
 
 local function timesync(session, localtime, from)
-	-- return session .. localtime .. eventtime
+	-- return globaltime .. localtime .. eventtime .. session , eventtime = 0xffffffff
 	local now = skynet.now()
-	socket.sendto(U, from, string.pack("<III", session, localtime, now))
+	socket.sendto(U, from, string.pack("<IIII", now, localtime, 0xffffffff, session))
 end
 
 local function udpdispatch(str, from)
-	local session, localtime, eventtime = string.unpack("<III", str, 9)
+	local localtime, eventtime, session = string.unpack("<III", str, 9)
 	local s = S[session]
 	if s then
 		if s.address ~= from then
