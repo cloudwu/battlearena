@@ -66,7 +66,7 @@ local function udpdispatch(str, from)
 		if s.time > eventtime + timeout then
 			snax.printf("The package is delay %f sec", (s.time - eventtime)/100)
 			return
-		elseif eventtime < s.time then
+		elseif eventtime > s.time then
 			-- drop this package, and force time sync
 			return timesync(session, localtime, from)
 		end

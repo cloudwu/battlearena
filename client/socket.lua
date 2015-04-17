@@ -290,7 +290,10 @@ local function udp_recv(self)
 		if session == self.__session then
 			time.sync(localtime, globaltime)
 		end
-		return eventtime, session, data:sub(13)
+		data = data:sub(17)
+		if data ~= "" then
+			return eventtime, session, data
+		end
 	end
 end
 
