@@ -18,3 +18,4 @@ gate_address = "$GATE_ADDRESS"
 gate_port = "$GATE_PORT"
 gate_name = "$GATE_NAME"	-- for multi gate
 max_client = $MAX_CLIENT
+udp_host = "$UDP_ADDRESS"

@@ -1,7 +1,5 @@
 local snax = require "snax"
-
--- todo: we can use a gate pool
-local host = "127.0.0.1"
+local host
 local port = 9999
 local udpgate
 local rooms = {}
@@ -18,5 +16,8 @@ end
 -- todo : close room ?
 
 function init()
+	local skynet = require "skynet"
+-- todo: we can use a gate pool
+	host = skynet.getenv "udp_host"
 	udpgate = snax.newservice("udpserver", "0.0.0.0", port)
 end

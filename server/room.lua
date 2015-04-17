@@ -7,31 +7,9 @@ local gate
 local users = {}
 
 function accept.update(data)
-	-- session(dword) time(dword) lag(word)
-	local now = skynet.now()
-	local session, time, lag = string.unpack("<IIH", data)
-	local diff = time + lag - now
-	if diff ~= 0 then
-		if diff > 0 then
-			if diff <= lag then
-				lag = lag - diff
-			else
-				lag = 0
-			end
-		else
-			if -diff > lag then
-				lag = lag * 2
-			else
-				lag = lag - diff
-			end
-		end
-		time = now - lag
-		data = string.pack("<IIH", session, time, lag) .. data:sub(11)
-	end
+	-- session(dword) localtime(dword) eventtime(dword)
 	for s,v in pairs(users) do
---		if s~=session then
-			gate.post.post(s, data)
---		end
+		gate.post.post(s, data)
 	end
 end
 

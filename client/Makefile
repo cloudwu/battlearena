@@ -1,4 +1,4 @@
-all : lsocket/lsocket.so time.so
+all : lsocket/lsocket.so timesync.so
 
 OS = $(shell uname -s)
 
@@ -8,7 +8,7 @@ else
 	LIBFLAG=-shared
 endif
 
-time.so: time.c
+timesync.so: timesync.c
 	gcc -O2 -Wall -fPIC $(LIBFLAG) -o $@ $^ -I/usr/local/include
 
 lsocket/lsocket.so :
