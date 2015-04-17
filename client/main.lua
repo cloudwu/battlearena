@@ -42,9 +42,9 @@ request(fd, "join", { room = 1 } , function(obj)
 	udp:sync()
 end)
 
-for i=1,600 do
+for i=1,1000 do
 	timesync.sleep(1)
-	if (i == 100 or i == 200 or i ==300) and udp then
+	if (i == 100 or i == 200 or i ==300or i == 600) and udp then
 		print("send time", timesync.globaltime())
 		udp:send ("Hello" .. i)
 	end

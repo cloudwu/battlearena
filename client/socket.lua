@@ -288,7 +288,7 @@ local function udp_recv(self)
 	if data then
 		local globaltime, localtime, eventtime, session = string.unpack("<IIII", data)
 		if session == self.__session then
-			print("sync:",time.sync(localtime, globaltime))
+			time.sync(localtime, globaltime)
 		end
 		return eventtime, session, data:sub(13)
 	end
