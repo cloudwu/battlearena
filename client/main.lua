@@ -45,10 +45,13 @@ end)
 for i=1,1000 do
 	timesync.sleep(1)
 	if (i == 100 or i == 200 or i ==300 or i == 600) and udp then
-		print("send time", timesync.globaltime())
-		udp:send ("Hello" .. i .. ":1")
-		udp:send ("Hello" .. i .. ":2")
-		udp:send ("Hello" .. i .. ":3")
+		local gtime = timesync.globaltime()
+		if gtime then
+			print("send time", gtime)
+			udp:send ("Hello" .. i .. ":1")
+			udp:send ("Hello" .. i .. ":2")
+			udp:send ("Hello" .. i .. ":3")
+		end
 	end
 	if udp then
 		local time, session, data = udp:recv()

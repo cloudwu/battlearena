@@ -88,8 +88,9 @@ lsync(lua_State *L) {
 static int
 lglobaltime(lua_State *L) {
 	struct time * t = lua_touserdata(L, lua_upvalueindex(1));
-	if (t->time_elapse < 0)
-		return luaL_error(L, "sync first");
+	if (t->time_elapse < 0) {
+		return 0;
+	}
 	uint64_t now = gettime();
 	int local_time = (int)(now - t->start_time);
 	int lag = (t->estimate_to - t->estimate_from)/2;
