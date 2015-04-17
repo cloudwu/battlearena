@@ -63,8 +63,8 @@ local function udpdispatch(str, from)
 		end
 		s.time = skynet.now()
 		-- NOTICE: after 497 days, the time will rewind
-		if s.time > time + timeout then
-			snax.printf("The package is delay %f sec", (s.time - lag)/100)
+		if s.time > eventtime + timeout then
+			snax.printf("The package is delay %f sec", (s.time - eventtime)/100)
 			return
 		end
 		s.room.post.update(str:sub(9))
