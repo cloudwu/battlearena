@@ -24,6 +24,7 @@ function response.register(service, key)
 		room = snax.bind(service, "room"),
 		address = nil,
 		time = skynet.now(),
+		lastevent = nil,
 	}
 	return SESSION
 end
@@ -69,7 +70,11 @@ local function udpdispatch(str, from)
 		elseif eventtime > s.time then
 			-- drop this package, and force time sync
 			return timesync(session, localtime, from)
+		elseif s.lastevent and eventtime < s.lastevent then
+			-- drop older event
+			return
 		end
+		s.lastevent = eventtime
 		s.room.post.update(str:sub(9))
 	else
 		snax.printf("Invalid session %d from %s" , session, socket.udp_address(from))
