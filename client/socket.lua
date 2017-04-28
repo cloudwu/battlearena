@@ -150,7 +150,7 @@ local function send_request(self, data)
 	local unsend = sb + 1
 	while sb < n do
 		n = n - sb
-		local sb = self.__fd:send(v.data:sub(unsend))
+		sb = self.__fd:send(v.data:sub(unsend))
 		if not sb then
 			closefd(self)
 			return
